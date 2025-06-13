@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="logo.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
     <title>To-Do List</title>
     <style>
         * {
@@ -58,42 +60,37 @@
         }
 
         .date-item {
-            min-width: 70px;
-            padding: 15px 10px;
+            min-width: 60px;
+            padding: 12px 8px;
             text-align: center;
-            border-radius: 16px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
             background: white;
             border: 2px solid transparent;
             user-select: none;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
         .date-item:hover {
-            background: #f8f9fa;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            background: #f0f0f0;
         }
 
         .date-item.active {
             background: #667eea;
             color: white;
             border-color: #5a6fd8;
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            transform: scale(1.05);
         }
 
         .date-item .day {
-            font-size: 13px;
-            font-weight: 600;
-            opacity: 0.8;
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0.7;
+            margin-bottom: 4px;
         }
 
         .date-item .number {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
         }
 
@@ -109,41 +106,35 @@
         }
 
         .selected-date {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             color: #667eea;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             text-align: center;
-            padding: 12px 20px;
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 12px;
-            border: 2px solid rgba(102, 126, 234, 0.2);
         }
 
         .task-item {
             background: white;
             border: 1px solid #e9ecef;
-            border-radius: 16px;
-            padding: 20px 18px;
-            margin-bottom: 16px;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
             transition: all 0.3s ease;
             cursor: pointer;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             position: relative;
-            min-height: 60px;
         }
 
         .task-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .task-item.completed {
-            opacity: 0.65;
+            opacity: 0.6;
             background: #f8f9fa;
         }
 
@@ -152,17 +143,15 @@
         }
 
         .task-checkbox {
-            width: 24px;
-            height: 24px;
-            border: 3px solid #667eea;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #667eea;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
             transition: all 0.3s ease;
-            font-size: 14px;
-            font-weight: bold;
         }
 
         .task-item.completed .task-checkbox {
@@ -172,28 +161,25 @@
 
         .task-text {
             flex: 1;
-            font-size: 17px;
-            line-height: 1.5;
-            font-weight: 500;
-            color: #333;
+            font-size: 16px;
+            line-height: 1.4;
         }
 
         .task-delete {
-            width: 32px;
-            height: 32px;
+            width: 24px;
+            height: 24px;
             border: none;
             background: #ff4757;
             color: white;
             border-radius: 50%;
-            font-size: 16px;
-            font-weight: bold;
+            font-size: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
             opacity: 0;
-            transform: scale(0.7);
+            transform: scale(0.8);
             flex-shrink: 0;
         }
 
@@ -204,28 +190,23 @@
 
         .task-delete:hover {
             background: #ff3742;
-            transform: scale(1.15);
+            transform: scale(1.1);
         }
 
         .task-delete:active {
-            transform: scale(0.95);
+            transform: scale(0.9);
         }
 
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 40px 20px;
             color: #666;
         }
 
         .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.6;
-        }
-
-        .empty-state p {
-            font-size: 18px;
-            font-weight: 500;
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
         }
 
         /* Pulsante aggiungi */
@@ -421,7 +402,7 @@
         </div>
     </div>
 
-    <script>
+        <script>
         // Variabili globali
         let currentDate = new Date();
         let selectedDate = new Date();
