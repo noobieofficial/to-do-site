@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="logo.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+    <title>To-Do List</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* Calendario lineare */
+        .calendar-container {
+            background: #f8f9fa;
+            padding: 20px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .calendar-scroll {
+            display: flex;
+            overflow-x: auto;
+            padding: 0 20px;
+            gap: 10px;
+            scroll-behavior: smooth;
+        }
+
+        .calendar-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .calendar-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 2px;
+        }
+
+        .calendar-scroll::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 2px;
+        }
+
+        .date-item {
+            min-width: 60px;
+            padding: 12px 8px;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            border: 2px solid transparent;
+            user-select: none;
+        }
+
+        .date-item:hover {
+            background: #f0f0f0;
+        }
+
+        .date-item.active {
+            background: #667eea;
+            color: white;
+            border-color: #5a6fd8;
+            transform: scale(1.05);
+        }
+
+        .date-item .day {
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+
+        .date-item .number {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .date-item.active .day {
+            opacity: 1;
+        }
+
+        /* Lista attività */
+        .tasks-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .selected-date {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .task-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+            background: #f8f9fa;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .task-item.completed .task-checkbox {
+            background: #667eea;
+            color: white;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        .task-delete {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: scale(0.8);
+            flex-shrink: 0;
+        }
+
+        .task-item:hover .task-delete {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .task-delete:hover {
+            background: #ff3742;
+            transform: scale(1.1);
+        }
+
+        .task-delete:active {
+            transform: scale(0.9);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Pulsante aggiungi */
+        .add-button {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            background: #667eea;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .add-button:hover {
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .add-button:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        /* Responsive per desktop - riporta il pulsante a destra */
+        @media (min-width: 768px) {
+            .add-button {
+                left: auto;
+                right: 20px;
+                transform: none;
+            }
+
+            .add-button:hover {
+                transform: scale(1.1);
+            }
+
+            .add-button:active {
+                transform: scale(0.95);
+            }
+        }
+
+        /* Modal per aggiungere attività */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px;
+            width: 100%;
+            max-width: 400px;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-button.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .modal-button.primary:hover {
+            background: #5a6fd8;
+        }
+
+        .modal-button.secondary {
+            background: #f8f9fa;
+            color: #666;
+        }
+
+        .modal-button.secondary:hover {
+            background: #e9ecef;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Responsive per desktop */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 600px;
+                margin: 20px auto;
+                border-radius: 16px;
+                min-height: calc(100vh - 40px);
+            }
+
+            .add-button {
+                left: auto;
+                right: 20px;
+                transform: none;
+            }
+
+            .add-button:hover {
+                transform: scale(1.1);
+            }
+
+            .add-button:active {
+                transform: scale(0.95);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Calendario lineare -->
+        <div class="calendar-container">
+            <div class="calendar-scroll" id="calendarScroll"></div>
+        </div>
+
+        <!-- Lista attività -->
+        <div class="tasks-container">
+            <div class="selected-date" id="selectedDate"></div>
+            <div id="tasksList"></div>
+        </div>
+
+        <!-- Pulsante aggiungi -->
+        <button class="add-button" onclick="openModal()">+</button>
+    </div>
+
+    <!-- Modal per aggiungere attività -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h3 class="modal-title">Aggiungi nuova attività</h3>
+            <input type="text" class="modal-input" id="taskInput" placeholder="Descrivi la tua attività...">
+            <div class="modal-buttons">
+                <button class="modal-button secondary" onclick="closeModal()">Annulla</button>
+                <button class="modal-button primary" onclick="addTask()">Aggiungi</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variabili globali
+        let currentDate = new Date();
+        let selectedDate = new Date();
+        let tasks = {};
+        let calendarStartDate = new Date();
+        let calendarEndDate = new Date();
+        let isLoadingDates = false;
+
+        // Nomi dei giorni e mesi
+        const dayNames = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+        const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+                           'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+
+        // Inizializza l'app
+        function initApp() {
+            initializeCalendarRange();
+            generateCalendar();
+            updateSelectedDate();
+            loadTasks();
+            renderTasks();
+            setupScrollListener();
+        }
+
+        // Inizializza il range del calendario
+        function initializeCalendarRange() {
+            calendarStartDate = new Date(currentDate);
+            calendarStartDate.setDate(currentDate.getDate() - 30); // Inizia con 30 giorni prima
+            
+            calendarEndDate = new Date(currentDate);
+            calendarEndDate.setDate(currentDate.getDate() + 30); // E 30 giorni dopo
+        }
+
+        // Genera il calendario lineare
+        function generateCalendar() {
+            const calendarScroll = document.getElementById('calendarScroll');
+            calendarScroll.innerHTML = '';
+
+            // Genera i giorni nel range corrente
+            let currentDateLoop = new Date(calendarStartDate);
+            
+            while (currentDateLoop <= calendarEndDate) {
+                const dateItem = createDateItem(new Date(currentDateLoop));
+                calendarScroll.appendChild(dateItem);
+                
+                // Scrolla automaticamente alla data selezionata al primo caricamento
+                if (currentDateLoop.toDateString() === selectedDate.toDateString()) {
+                    setTimeout(() => {
+                        dateItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    }, 100);
+                }
+                
+                currentDateLoop.setDate(currentDateLoop.getDate() + 1);
+            }
+        }
+
+        // Crea un singolo elemento data
+        function createDateItem(date) {
+            const dateItem = document.createElement('div');
+            dateItem.className = 'date-item';
+            dateItem.onclick = () => selectDate(date);
+            dateItem.dataset.date = date.toDateString();
+            
+            const isSelected = date.toDateString() === selectedDate.toDateString();
+            
+            if (isSelected) {
+                dateItem.classList.add('active');
+            }
+            
+            dateItem.innerHTML = `
+                <div class="day">${dayNames[date.getDay()]}</div>
+                <div class="number">${date.getDate()}</div>
+            `;
+            
+            return dateItem;
+        }
+
+        // Configura il listener per lo scroll infinito
+        function setupScrollListener() {
+            const calendarScroll = document.getElementById('calendarScroll');
+            
+            calendarScroll.addEventListener('scroll', () => {
+                if (isLoadingDates) return;
+                
+                const scrollLeft = calendarScroll.scrollLeft;
+                const scrollWidth = calendarScroll.scrollWidth;
+                const clientWidth = calendarScroll.clientWidth;
+                
+                // Carica giorni futuri quando si avvicina alla fine (trigger più anticipato)
+                if (scrollLeft + clientWidth >= scrollWidth - 200) {
+                    loadMoreDates('future');
+                }
+                
+                // Carica giorni passati quando si avvicina all'inizio (trigger più anticipato)
+                if (scrollLeft <= 200) {
+                    loadMoreDates('past');
+                }
+            });
+        }
+
+        // Carica più date dinamicamente
+        function loadMoreDates(direction) {
+            if (isLoadingDates) return;
+            isLoadingDates = true;
+
+            const calendarScroll = document.getElementById('calendarScroll');
+            const currentScrollLeft = calendarScroll.scrollLeft;
+            
+            if (direction === 'future') {
+                // Aggiunge 20 giorni nel futuro (invece di 10)
+                const currentEndDate = new Date(calendarEndDate);
+                for (let i = 1; i <= 20; i++) {
+                    const newDate = new Date(calendarEndDate);
+                    newDate.setDate(calendarEndDate.getDate() + i);
+                    
+                    const dateItem = createDateItem(newDate);
+                    calendarScroll.appendChild(dateItem);
+                }
+                calendarEndDate.setDate(calendarEndDate.getDate() + 20);
+                
+            } else if (direction === 'past') {
+                // Aggiunge 20 giorni nel passato (invece di 10)
+                const fragment = document.createDocumentFragment();
+                const itemsToAdd = [];
+                
+                for (let i = 20; i >= 1; i--) {
+                    const newDate = new Date(calendarStartDate);
+                    newDate.setDate(calendarStartDate.getDate() - i);
+                    
+                    const dateItem = createDateItem(newDate);
+                    itemsToAdd.push(dateItem);
+                    fragment.appendChild(dateItem);
+                }
+                
+                calendarScroll.insertBefore(fragment, calendarScroll.firstChild);
+                calendarStartDate.setDate(calendarStartDate.getDate() - 20);
+                
+                // Mantiene la posizione di scroll dopo aver aggiunto elementi all'inizio
+                const newScrollLeft = currentScrollLeft + (itemsToAdd.length * 80); // 80px circa per item
+                calendarScroll.scrollLeft = newScrollLeft;
+            }
+            
+            setTimeout(() => {
+                isLoadingDates = false;
+            }, 200);
+        }
+
+        // Seleziona una data
+        function selectDate(date) {
+            // Rimuove la classe active dal precedente elemento selezionato
+            const prevActive = document.querySelector('.date-item.active');
+            if (prevActive) {
+                prevActive.classList.remove('active');
+            }
+            
+            // Aggiunge la classe active al nuovo elemento selezionato
+            const dateItems = document.querySelectorAll('.date-item');
+            dateItems.forEach(item => {
+                if (item.dataset.date === date.toDateString()) {
+                    item.classList.add('active');
+                }
+            });
+            
+            selectedDate = new Date(date);
+            updateSelectedDate();
+            renderTasks();
+        }
+
+        // Aggiorna la data selezionata mostrata
+        function updateSelectedDate() {
+            const selectedDateEl = document.getElementById('selectedDate');
+            const today = new Date();
+            
+            if (selectedDate.toDateString() === today.toDateString()) {
+                selectedDateEl.textContent = 'Oggi';
+            } else {
+                selectedDateEl.textContent = `${selectedDate.getDate()} ${monthNames[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`;
+            }
+        }
+
+        // Ottieni la chiave per la data
+        function getDateKey(date) {
+            return date.toDateString();
+        }
+
+        // Carica le attività dal localStorage
+        function loadTasks() {
+            const savedTasks = localStorage.getItem('todoTasks');
+            if (savedTasks) {
+                tasks = JSON.parse(savedTasks);
+            }
+        }
+
+        // Salva le attività nel localStorage
+        function saveTasks() {
+            localStorage.setItem('todoTasks', JSON.stringify(tasks));
+        }
+
+        // Renderizza le attività per la data selezionata
+        function renderTasks() {
+            const tasksList = document.getElementById('tasksList');
+            const dateKey = getDateKey(selectedDate);
+            const dayTasks = tasks[dateKey] || [];
+            
+            if (dayTasks.length === 0) {
+                tasksList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <p>Nessuna attività per questo giorno</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            tasksList.innerHTML = dayTasks.map((task, index) => `
+                <div class="task-item ${task.completed ? 'completed' : ''}">
+                    <div class="task-checkbox" onclick="toggleTask(${index}); event.stopPropagation();">
+                        ${task.completed ? '✓' : ''}
+                    </div>
+                    <div class="task-text" onclick="toggleTask(${index}); event.stopPropagation();">${task.text}</div>
+                    <button class="task-delete" onclick="deleteTask(${index}); event.stopPropagation();" title="Elimina attività">×</button>
+                </div>
+            `).join('');
+        }
+
+        // Elimina un'attività
+        function deleteTask(index) {
+            const dateKey = getDateKey(selectedDate);
+            if (!tasks[dateKey]) return;
+            
+            // Conferma l'eliminazione
+            if (confirm('Sei sicuro di voler eliminare questa attività?')) {
+                tasks[dateKey].splice(index, 1);
+                
+                // Se non ci sono più attività per questo giorno, rimuovi la chiave
+                if (tasks[dateKey].length === 0) {
+                    delete tasks[dateKey];
+                }
+                
+                saveTasks();
+                renderTasks();
+            }
+        }
+
+        // Togglea lo stato di completamento di un'attività
+        function toggleTask(index) {
+            const dateKey = getDateKey(selectedDate);
+            if (!tasks[dateKey]) return;
+            
+            tasks[dateKey][index].completed = !tasks[dateKey][index].completed;
+            saveTasks();
+            renderTasks();
+        }
+
+        // Apri il modal per aggiungere attività
+        function openModal() {
+            const modal = document.getElementById('modal');
+            const input = document.getElementById('taskInput');
+            
+            modal.classList.add('show');
+            input.value = '';
+            setTimeout(() => input.focus(), 300);
+        }
+
+        // Chiudi il modal
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('show');
+        }
+
+        // Aggiungi nuova attività
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const taskText = input.value.trim();
+            
+            if (!taskText) {
+                input.focus();
+                return;
+            }
+            
+            const dateKey = getDateKey(selectedDate);
+            if (!tasks[dateKey]) {
+                tasks[dateKey] = [];
+            }
+            
+            tasks[dateKey].push({
+                text: taskText,
+                completed: false,
+                createdAt: new Date().toISOString()
+            });
+            
+            saveTasks();
+            renderTasks();
+            closeModal();
+        }
+
+        // Event listeners
+        document.getElementById('taskInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') {
+                closeModal();
+            }
+        });
+
+        // Inizializza l'app quando la pagina è caricata
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
